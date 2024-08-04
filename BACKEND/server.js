@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql");
-const winston = require('winston'); // Structured logging library
+const log = require('./logger'); // using Winston logger for timestamp
 const app = express();
 
 app.use(express.json());
@@ -9,34 +9,6 @@ app.use(cors());
 let db;
 let retryCount = 0;
 const maxRetries = 5; // Set the maximum number of retries
-
-// Custom format to include both timestamp, filename, and the message
-const customFormat = winston.format.printf(({ level, message, timestamp, filename }) => {
-    const formattedTimestamp = new Date(timestamp).toLocaleString();
-    return `[${formattedTimestamp}] ${filename} ${message}`;
-});
-
-const log = winston.createLogger({
-    levels: winston.config.npm.levels, // Use the predefined NPM log levels
-    level: 'info', // Default log level
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format((info) => {
-            info.filename = info.filename || 'unknown_file';
-            return info;
-        })(),
-        customFormat
-    ),
-    transports: [
-        new winston.transports.Console(),
-        new winston.transports.File({ filename: 'app.log' })
-    ]
-});
-
-// Wrapper function to log messages with filename
-const logWithFile = (level, message, filename) => {
-    logger.log({ level, message, filename });
-};
 
 function connectToDatabase() {
     db = mysql.createConnection({
@@ -48,28 +20,28 @@ function connectToDatabase() {
 
     db.connect(err => {
         if (err) {
-            log.error(` server.js Error connecting to MySQL`, err);
+            log.error(`server.js Error connecting to DATABASE`);
             if (err.code === 'ER_BAD_DB_ERROR')
                 log.error("Specified Database does not exit.")
             retryCount++;
             if (retryCount < maxRetries) {
-                console.log(`[${new Date().toLocaleString()}] server.js Retrying connection in 5 seconds... (Attempt ${retryCount} of ${maxRetries})`);
+                log.debug(`server.js Retrying connection in 5 seconds... (Attempt ${retryCount} of ${maxRetries})`);
                 setTimeout(connectToDatabase, 5000); // Retry connection after 5 seconds
             } else {
-                console.error(`[${new Date().toLocaleString()}] Maximum retry Attempt = ${maxRetries} reached. Could not connect to MySQL.`);
-                // process.exit(1);
+                console.error(`[${new Date().toLocaleString()}] Maximum retry Attempt = ${maxRetries} reached. Could not connect to DATABASE.`);
+                process.exit(1);
             }
         } else {
             retryCount = 0;
-            console.log(`[${new Date().toLocaleString()}] Connected to MySQL server.`);
+            console.log(`[${new Date().toLocaleString()}] Connected to DATABASE server.`);
         }
     });
 
     db.on('error', err => {
-        console.error(`[${new Date().toLocaleString()}] MySQL error:`, err.message);
+        console.error(`[${new Date().toLocaleString()}] DATABASE error:`, err.message);
         if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ECONNRESET') {
             console.error(`[${new Date().toLocaleString()}] server.js Connection Lost with SQL SERVER. ERROR CODE=`, err.code);
-            console.log(`[${new Date().toLocaleString()}] Attempting to reconnect to MySQL server...`);
+            console.log(`[${new Date().toLocaleString()}] Attempting to reconnect to DATABASE server...`);
             connectToDatabase();
         } else {
             console.error(`[${new Date().toLocaleString()}] server.js UNKNOWN ERROR`);
