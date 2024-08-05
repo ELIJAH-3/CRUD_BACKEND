@@ -3,13 +3,13 @@ const winston = require('winston');
 
 // Define custom colors
 const colors = {
-    info: '36',
+    info: '32', // Green
     warn: '33',
     error: '31',
     debug: '36',
     verbose: '34',
     silly: '35',
-    timestamp: '32',
+    timestamp: '37', // white
     message: '37'
 };
 
