@@ -84,10 +84,11 @@ function CreateDatabaseUsingTempDataBase() {
                 return reject(err);
             }
             log.debug(`DataBase.js CreateDatabaseUsingTempDataBase: RESULT: ${JSON.stringify(data, null, 2)}`);
+            log.debug(`DataBase.js Closing tempDb`);
+            tempDb.end();
+            return resolve("Database created");
         });
-        log.debug(`DataBase.js CreateDatabaseUsingTempDataBase: Closing tempDb`);
-        tempDb.end();
-        return resolve("Database created");
+        log.debug(`DataBase.js Closing tempDb`);
     });
 }
 function CreateTableAndInsertDummy()
