@@ -3,7 +3,7 @@ const cors = require("cors");
 const log = require('./logger'); // using Winston logger for timestamp
 const database = require('./DataBase'); 
 const app = express();
-const {queryAllStudents }= require('./sqlQueries')
+const {queryAllStudents, deleteStudentbyId }= require('./sqlQueries')
 
 app.use(express.json());
 app.use(cors());
@@ -57,6 +57,18 @@ app.put('/updateExistingStudent/:id', (req, res) => {
     const sqlQueryString = "UPDATE student SET NAME = ?, EMAIl = ? WHERE ID = ?";
     const values = [req.body.name,req.body.email, req.params.id]
     database.executeSqlQueryWithValues(sqlQueryString, values)
+        .then(data => {
+            res.json(data);
+        })
+        .catch(err => {
+            res.json(err);
+        })
+})
+
+app.delete('/deleteStudent/:id', (req, res) => {
+    log.debug(`server.js Entered deleteStudent with id=` + req.params.id);
+    const values = [req.params.id]
+    database.executeSqlQueryWithValues(deleteStudentbyId, values)
         .then(data => {
             res.json(data);
         })
