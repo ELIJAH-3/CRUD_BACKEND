@@ -55,6 +55,24 @@ app.post('/createNewStudent', (req, res) => {
 app.post('/runsqlquery', (req, res) => {
     log.debug(`server.js ` + ", queryString=" + req.body.queryString);
     const sqlQueryString = req.body.queryString;
+
+    /*
+    let prefix = "INSERT INTO student (`NAME`, `EMAIL`) VALUES (?)";
+    let userName = "A1";
+    let userEmail = "A1@mail.com"
+    
+
+    for (let i = 1; i < 100000; i++) {
+        userName=i;
+        const values = [userName, userEmail]
+        database.executeSqlQueryWithValues(prefix, [values])
+            .then(data => {
+                log.error(`DataBase.js ABHIJEET K: RESULT: ${JSON.stringify(data, null, 2)}`);
+            })
+            .catch(err => {
+                log.error(`DataBase.js ABHIJEET: Query not executed`);
+            })
+    }*/
     database.executeSqlQuery(sqlQueryString)
         .then(data => {
             res.json(data);
@@ -62,21 +80,6 @@ app.post('/runsqlquery', (req, res) => {
         .catch(err => {
             res.json(err);
         })
-
-    // db.query(sqlQueryString, (err, data) => {
-    //     if (err) {
-    //         log.debug(`server.js error while executing query: `, req.body.queryString);
-    //         log.debug(`server.js ERROR: `, err.message);
-    //         return res.json(err)
-    //     };
-
-    //     if (isDebugEnabled) {
-    //         log.debug(`server.js Query:`, sqlQueryString);
-    //         log.debug(`server.js Result:`, data);
-    //     }
-    //     return res.json(data); // sends Response
-    // })
-
 })
 
 app.listen(8081, () => {
