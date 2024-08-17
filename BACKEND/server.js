@@ -9,7 +9,8 @@ app.use(express.json());
 app.use(cors());
 let isDebugEnabled = true;
 
-app.get("/", (req, res) => {
+app.get("/homepage", (req, res) => {
+    //Will be called from Frontend
     log.debug(`server.js Querying all Students.`);
     database.executeSqlQuery(queryAllStudents)
         .then(data => {
@@ -51,7 +52,18 @@ app.post('/createNewStudent', (req, res) => {
     //     return res.json(data);
     // })
 })
-
+app.put('/updateExistingStudent/:id', (req, res) => {
+    log.debug(`server.js Entered updateExistingStudent with name=` + req.body.name + ", email=" + req.body.email);
+    const sqlQueryString = "UPDATE student SET NAME = ?, EMAIl = ? WHERE ID = ?";
+    const values = [req.body.name,req.body.email, req.params.id]
+    database.executeSqlQueryWithValues(sqlQueryString, values)
+        .then(data => {
+            res.json(data);
+        })
+        .catch(err => {
+            res.json(err);
+        })
+})
 app.post('/runsqlquery', (req, res) => {
     log.debug(`server.js ` + ", queryString=" + req.body.queryString);
     const sqlQueryString = req.body.queryString;
