@@ -1,4 +1,3 @@
-// logger.js
 const winston = require('winston');
 
 // Define custom colors
@@ -33,8 +32,21 @@ const logger = winston.createLogger({
         customFormat // Use the custom format defined above
     ),
     transports: [
-        new winston.transports.Console(), // Log to the console
-        new winston.transports.File({ filename: 'app.log' }) // Log to a file
+        new winston.transports.Console({
+            format: winston.format.combine(
+                winston.format.timestamp(), // Add timestamp
+                customFormat // Use custom format with colors
+            ),
+        }),
+        new winston.transports.File({
+            filename: 'app.log',
+            format: winston.format.combine(
+                winston.format.timestamp(), // Add timestamp
+                winston.format.uncolorize(), // TimeStamp() will colorise the logs. Uncolorize after calling timeStamp
+                customFormat, // Use custom format without colors
+                winston.format.uncolorize(), // Remove color codes for file logs
+            ),
+        }),
     ],
 });
 
