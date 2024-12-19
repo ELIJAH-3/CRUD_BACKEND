@@ -35,8 +35,8 @@ function connectToDatabase() {
                 log.debug(`DataBase.js connectToDatabase: Retrying connection in 5 seconds... (Attempt ${retryCount} of ${maxRetries})`);
                 setTimeout(connectToDatabase, 5000); // Retry connection after 5 seconds
             } else {
-                log.error(`Maximum retry Attempt = ${maxRetries} reached. Could not connect to DATABASE.`);
-                // process.exit(1);
+                log.error(`DataBase.js Maximum retry Attempt = ${maxRetries} reached. Could not connect to DATABASE.`);
+                process.exit(1);
             }
         } else {
             retryCount = 0;
@@ -59,7 +59,6 @@ function connectToDatabase() {
 function CreateDatabaseUsingTempDataBase() {
     log.debug("DataBase.js CreateDatabaseUsingTempDataBase().")
     return new Promise((resolve, reject) => {
-        
         //Define a DB
         const tempDb = mysql.createConnection({
             host: "localhost",
@@ -88,12 +87,11 @@ function CreateDatabaseUsingTempDataBase() {
             tempDb.end();
             return resolve("Database created");
         });
-        log.debug(`DataBase.js Closing tempDb`);
     });
 }
 function CreateTableAndInsertDummy()
 {
-    log.debug("DataBase.js CreateTableAndInsertDummy().")
+    log.debug("DataBase.js CreateTableAndInsertDummy() Called.")
     return new Promise((resolve, reject) => {
         db.query(createTableQuery, (err, data) => {
             log.debug("DataBase.js CreateTableAndInsertDummy()- QUERY EXECUTED=" + createTableQuery);
@@ -102,18 +100,18 @@ function CreateTableAndInsertDummy()
                 return reject(err);
             }
             log.debug(`DataBase.js CreateTableAndInsertDummy()-RESULT: ${JSON.stringify(data, null, 2)}`);
-        });
 
-        db.query(insertDummyStudentQuery, (err, data) => {
-            log.debug("DataBase.js CreateTableAndInsertDummy()- QUERY EXECUTED=" + insertDummyStudentQuery);
-            if (err) {
-                log.error("DataBase.js CreateTableAndInsertDummy(). Could not insert values. ERROR=" + err.message)
-                return reject(err);
-            }
-            log.debug(`DataBase.js CreateTableAndInsertDummy()-RESULT: ${JSON.stringify(data, null, 2)}`);
+            db.query(insertDummyStudentQuery, (err, data) => {
+                log.debug("DataBase.js CreateTableAndInsertDummy()- QUERY EXECUTED=" + insertDummyStudentQuery);
+                if (err) {
+                    log.error("DataBase.js CreateTableAndInsertDummy(). Could not insert values. ERROR=" + err.message)
+                    return reject(err);
+                }
+                log.debug(`DataBase.js CreateTableAndInsertDummy()-RESULT: ${JSON.stringify(data, null, 2)}`);
+            });
+            log.info("Table created. Dummy Values inserted.");
+            return resolve("Table created. Dummy Values inserted.");
         });
-        log.info("Table created. Dummy Values inserted.");
-        return resolve("Table created. Dummy Values inserted.");
     });
 }
 
@@ -127,6 +125,7 @@ function executeSqlQuery(queryString) {
                 log.error("DataBase.js executeSqlQuery() error during sql execution. ERROR=" + err.message)
                 if(err.code === "ER_NO_SUCH_TABLE")
                 {
+                    //TODO: Check if table name is STUDENT
                     CreateTableAndInsertDummy()
                         .then(data=> {
                             return  executeSqlQuery(queryString).then(resolve).catch(reject);
