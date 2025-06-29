@@ -1,9 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const log = require('./logger'); // using Winston logger for timestamp
-const database = require('./DataBase'); 
+const database = require('./database');
 const app = express();
-const {queryAllStudents, deleteStudentbyId }= require('./sqlQueries')
+const { queryAllStudents, deleteStudentbyId } = require('./sqlQueries')
 
 app.use(express.json());
 app.use(cors());
@@ -38,7 +38,7 @@ app.get("/homepage", (req, res) => {
 app.post('/createNewStudent', (req, res) => {
     log.debug(`server.js Entered Create New Student with name=` + req.body.name + ", email=" + req.body.email);
     const sqlQueryString = "INSERT INTO STUDENT (`NAME`, `EMAIL`) VALUES (?)";
-    const values = [req.body.name,req.body.email]
+    const values = [req.body.name, req.body.email]
     database.executeSqlQueryWithValues(sqlQueryString, [values])
         .then(data => {
             res.json(data);
@@ -55,7 +55,7 @@ app.post('/createNewStudent', (req, res) => {
 app.put('/updateExistingStudent/:id', (req, res) => {
     log.debug(`server.js Entered updateExistingStudent with name=` + req.body.name + ", email=" + req.body.email);
     const sqlQueryString = "UPDATE STUDENT SET NAME = ?, EMAIl = ? WHERE ID = ?";
-    const values = [req.body.name,req.body.email, req.params.id]
+    const values = [req.body.name, req.body.email, req.params.id]
     database.executeSqlQueryWithValues(sqlQueryString, values)
         .then(data => {
             res.json(data);
